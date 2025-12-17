@@ -7,6 +7,17 @@ Docker images :
 5) docker links:
 6) https://hub.docker.com/repository/docker/monaahmed/backend/general
 7) https://hub.docker.com/repository/docker/monaahmed/frontend/general
-8) 
+-----------------------Push images from dockerhub to ECR-------------------------
+   1) Login to aws account:
+      aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 134667369554.dkr.ecr.us-east-1.amazonaws.com
+   3) create repo FE:  aws ecr create-repository --repository-name frontend
+   4) create repo BE:  aws ecr create-repository --repository-name backend
+   5) Tag images:
+   *  docker tag monaahmed/backend:health 134667369554.dkr.ecr.us-east-1.amazonaws.com/backend:latest
+   *  docker tag monaahmed/frontend:latest 134667369554.dkr.ecr.us-east-1.amazonaws.com/frontend:latest
+   5)PUSH TO ECR:
+   * docker push 134667369554.dkr.ecr.us-east-1.amazonaws.com/backend:latest
+   * docker push 134667369554.dkr.ecr.us-east-1.amazonaws.com/frontend:latest
+   7) 
 
 
