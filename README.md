@@ -18,6 +18,10 @@ Docker images :
    5)PUSH TO ECR:
    * docker push 134667369554.dkr.ecr.us-east-1.amazonaws.com/backend:latest
    * docker push 134667369554.dkr.ecr.us-east-1.amazonaws.com/frontend:latest
-   7) 
+6) Create Kubernetes secret:
+✅ This creates a Kubernetes secret named ecr-registry using your AWS ECR credentials in a single command.
+** aws ecr get-login-password --region us-east-1 | kubectl create secret docker-registry ecr-registry --docker-server=134667369554.dkr.ecr.us-east-1.amazonaws.com --docker-username=AWS --docker-password-stdin
+
+------------------------------------------------------------------------------------
 
 
