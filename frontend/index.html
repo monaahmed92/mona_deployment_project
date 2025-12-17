@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>3-Tier App</title>
+</head>
+<body>
+  <h1>Frontend</h1>
+  <button onclick="loadUsers()">Load Users</button>
+  <ul id="users"></ul>
+
+  <script>
+    function loadUsers() {
+      fetch("/api/users")
+        .then(res => res.json())
+        .then(data => {
+          const ul = document.getElementById("users");
+          ul.innerHTML = "";
+          data.users.forEach(u => {
+            const li = document.createElement("li");
+            li.innerText = u;
+            ul.appendChild(li);
+          });
+        });
+    }
+  </script>
+</body>
+</html>
