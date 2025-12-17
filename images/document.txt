@@ -1,1 +1,23 @@
-this folder to have screenshots of aws components 
+ECR Repositories:
+
+
+--------------------PUSH from Dockerhub to ECR-----------------------
+
+1. Login to aws account: 
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 134667369554.dkr.ecr.us-east-1.amazonaws.com
+2- create repo FE: 
+aws ecr create-repository --repository-name frontend
+ii. create repo BE: 
+aws ecr create-repository --repository-name backend
+iii. Tag images:
+o docker tag monaahmed/backend:health 134667369554.dkr.ecr.us-east-1.amazonaws.com/backend:latest
+o docker tag monaahmed/frontend:latest 134667369554.dkr.ecr.us-east-1.amazonaws.com/frontend:latest 
+5)PUSH TO ECR:
+o docker push 134667369554.dkr.ecr.us-east-1.amazonaws.com/backend:latest
+o docker push 134667369554.dkr.ecr.us-east-1.amazonaws.com/frontend:latest
+2. Create Kubernetes secret: ? This creates a Kubernetes secret named ecr-registry using your AWS ECR credentials in a single command. 
+** aws ecr get-login-password --region us-east-1 | kubectl create secret docker-registry ecr-registry --docker-server=134667369554.dkr.ecr.us-east-1.amazonaws.com --docker-username=AWS --docker-password-stdin
+
+
+
+
