@@ -23,5 +23,6 @@ Docker images :
 ** aws ecr get-login-password --region us-east-1 | kubectl create secret docker-registry ecr-registry --docker-server=134667369554.dkr.ecr.us-east-1.amazonaws.com --docker-username=AWS --docker-password-stdin
 
 ------------------------------------------------------------------------------------
+** configure aws : aws eks update-kubeconfig --region us-east-1 --name depi-cluster
 
 
