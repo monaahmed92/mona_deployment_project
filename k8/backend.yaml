@@ -12,9 +12,11 @@ spec:
       labels:
         app: backend
     spec:
+      imagePullSecrets:
+        - name: ecr-registry
       containers:
       - name: backend
-        image: monaahmed/backend:health
+        image: 134667369554.dkr.ecr.us-east-1.amazonaws.com/backend:latest
         ports:
         - containerPort: 8000
         env:
@@ -49,3 +51,4 @@ spec:
     app: backend
   ports:
   - port: 8000
+    targetPort: 8000
