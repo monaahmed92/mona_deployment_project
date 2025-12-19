@@ -81,6 +81,33 @@ module "eks" {
     Environment = "dev"
   }
 }
+# ECR Repository for Backend
+resource "aws_ecr_repository" "backend" {
+  name                 = "backend"
+  image_tag_mutability = "MUTABLE"
+  encryption_configuration {
+    encryption_type = "AES256"
+  }
+
+  tags = {
+    Environment = "dev"
+    Project     = "mona"
+  }
+}
+
+# ECR Repository for Frontend
+resource "aws_ecr_repository" "frontend" {
+  name                 = "frontend"
+  image_tag_mutability = "MUTABLE"
+  encryption_configuration {
+    encryption_type = "AES256"
+  }
+
+  tags = {
+    Environment = "dev"
+    Project     = "mona"
+  }
+}
 
 
 data "aws_eks_cluster_auth" "this" {
