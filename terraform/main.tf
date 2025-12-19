@@ -48,25 +48,24 @@ module "vpc" {
 }
 
  # VPC old version = "19.0.1"
-module "eks" {
-  source  = "terraform-aws-modules/eks/aws"
-   version = "20.0.1"
+# module "eks" {
+#   source  = "terraform-aws-modules/eks/aws"
+#   version = "20.0.1"
+#
+#   cluster_name    = "mona-eks-cluster-v2"
+#   cluster_version = "1.28"
+#
+#   vpc_id     = module.vpc.vpc_id
+#   subnet_ids = module.vpc.private_subnets
+#
+#   cluster_endpoint_public_access  = true
+#   cluster_endpoint_private_access = true
+#
+#   tags = {
+#     Environment = "dev"
+#   }
+# }
 
-  cluster_name    = "mona-eks-cluster-v2"
-  cluster_version = "1.28"
-
-  vpc_id     = module.vpc.vpc_id
-  subnet_ids = module.vpc.private_subnets
-
-  cluster_endpoint_public_access  = true
-  cluster_endpoint_private_access = true
-
-  # FREE-TIER SAFE NODE GROUP
-
-  tags = {
-    Environment = "dev"
-  }
-}
 
 # ECR Repository for Backend
 resource "aws_ecr_repository" "backend" {
@@ -97,13 +96,12 @@ resource "aws_ecr_repository" "frontend" {
 }
 
 
-data "aws_eks_cluster_auth" "this" {
-  name = module.eks.cluster_name
-}
+# data "aws_eks_cluster_auth" "this" {
+#   name = module.eks.cluster_name
+# }
 
-provider "kubernetes" {
-  host                   = module.eks.cluster_endpoint
-  cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
-  token                  = data.aws_eks_cluster_auth.this.token
-}
-
+# provider "kubernetes" {
+#   host                   = module.eks.cluster_endpoint
+#   cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+#   token                  = data.aws_eks_cluster_auth.this.token
+# }
