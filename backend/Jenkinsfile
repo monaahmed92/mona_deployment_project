@@ -16,34 +16,33 @@ pipeline {
         }
 
         stage('Build Docker Image') {
-           steps {
+            steps {
                 dir('backend') {
                     bat 'docker build -t %IMAGE_NAME%:%IMAGE_TAG% .'
                 }
             }
         }
 
-
         stage('Push Image') {
-           steps {
+            steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-creds',
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
-                    bat "docker push %IMAGE_NAME%:latest"
+                    bat "docker push %IMAGE_NAME%:%IMAGE_TAG%"
                 }
+            }
+        }
     }
-}
-
 
     post {
         success {
-            echo "✅ Backend image pushed to Docker Hub: %IMAGE_NAME%:latest"
+            echo "✅ Backend image pushed to Docker Hub: %IMAGE_NAME%:%IMAGE_TAG%"
         }
         always {
             cleanWs()
         }
     }
-}
+} // <- Make sure this closing brace is here
