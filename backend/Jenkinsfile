@@ -1,0 +1,48 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "monaahmed/backend"
+        IMAGE_TAG  = "v${BUILD_NUMBER}"
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                git branch: 'jenkin_git_pipeline',
+                    url: 'https://github.com/monaahmed92/mona_deployment_project.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                bat 'docker build -t %IMAGE_NAME%:latest .'
+            }
+        }
+
+        stage('Push Image') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'a104042b-1462-4017-b068-3ba4ddf1d695',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    bat '''
+                    echo %DOCKER_PASS% | docker login -u %DOCKER_USER --password-stdin
+                    docker push %IMAGE_NAME%:latest
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Backend image pushed to Docker Hub: %IMAGE_NAME%:latest"
+        }
+        always {
+            cleanWs()
+        }
+    }
+}
