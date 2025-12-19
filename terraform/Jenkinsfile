@@ -1,3 +1,94 @@
+// pipeline {
+//   agent any
+
+//   environment {
+//     AWS_DEFAULT_REGION = "us-east-1"
+//     TF_IN_AUTOMATION   = "true"
+//   }
+
+//   stages {
+
+//     stage('Checkout') {
+//       steps {
+//         checkout scm
+//       }
+//     }
+//     stage('Terraform Check') {
+//      steps {
+//          bat 'terraform --version'
+//         }
+//      }
+
+//     stage('Terraform Init') {
+//       steps {
+//         withCredentials([
+//           [$class: 'AmazonWebServicesCredentialsBinding',
+//            credentialsId: 'aws-credentials']
+//         ]) {
+//           dir('terraform') {
+//             bat '''
+//               terraform --version
+//               terraform init -upgrade
+//             '''
+//           }
+//         }
+//       }
+//     }
+//     stage('Terraform Validate') {
+//       steps {
+//         dir('terraform') {
+//           bat '''
+//             terraform validate
+//           '''
+//         }
+//       }
+//     }
+//     stage('Terraform Plan') {
+//       steps {
+//         withCredentials([
+//           [$class: 'AmazonWebServicesCredentialsBinding',
+//            credentialsId: 'aws-credentials']
+//         ]) {
+//           dir('terraform') {
+//             bat '''
+//               terraform plan -out=tfplan
+//             '''
+//           }
+//         }
+//       }
+//     }
+//     stage('Approval') {
+//       steps {
+//         input message: 'Apply Terraform changes to AWS?', ok: 'Apply'
+//       }
+//     }
+
+//     stage('Terraform Apply') {
+//       steps {
+//         withCredentials([
+//           [$class: 'AmazonWebServicesCredentialsBinding',
+//            credentialsId: 'aws-credentials']
+//         ]) {
+//           dir('terraform') {
+//             bat '''
+//               terraform apply -auto-approve tfplan
+//             '''
+//           }
+//         }
+//       }
+//     }
+//   }
+
+//   post {
+//     success {
+//       echo 'Terraform infrastructure deployed successfully.'
+//     }
+//     failure {
+//       echo 'Terraform deployment failed.'
+//     }
+//   }
+// }
+
 pipeline {
   agent any
 
@@ -13,11 +104,6 @@ pipeline {
         checkout scm
       }
     }
-    stage('Terraform Check') {
-     steps {
-         bat 'terraform --version'
-        }
-     }
 
     stage('Terraform Init') {
       steps {
@@ -27,7 +113,14 @@ pipeline {
         ]) {
           dir('terraform') {
             bat '''
+              REM Clean previous Terraform state and lock
+              if exist .terraform rd /s /q .terraform
+              if exist .terraform.lock.hcl del /q .terraform.lock.hcl
+
+              REM Check Terraform version
               terraform --version
+
+              REM Initialize Terraform and upgrade modules
               terraform init -upgrade
             '''
           }
@@ -80,6 +173,7 @@ pipeline {
         }
       }
     }
+
   }
 
   post {
@@ -91,3 +185,4 @@ pipeline {
     }
   }
 }
+

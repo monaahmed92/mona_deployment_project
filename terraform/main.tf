@@ -18,11 +18,12 @@ provider "aws" {
   region = "us-east-1"
 }
 
-
+ # VPC old version = "4.0"
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "4.0"
+ 
+  version = "6.5.1"
 
   name = "eks-vpc"
   cidr = "10.0.0.0/16"
@@ -46,10 +47,10 @@ module "vpc" {
   }
 }
 
-
+ # VPC old version = "19.0.1"
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "19.0.1"
+   version = "20.0.1"
 
   cluster_name    = "mona-eks-cluster-v2"
   cluster_version = "1.28"
