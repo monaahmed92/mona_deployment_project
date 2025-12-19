@@ -13,6 +13,11 @@ pipeline {
         checkout scm
       }
     }
+    stage('Terraform Check') {
+     steps {
+         bat 'terraform --version'
+        }
+     }
 
     stage('Terraform Init') {
       steps {
@@ -21,7 +26,7 @@ pipeline {
            credentialsId: 'aws-credentials']
         ]) {
           dir('terraform') {
-            sh '''
+            bat '''
               terraform --version
               terraform init -upgrade
             '''
@@ -33,7 +38,7 @@ pipeline {
     stage('Terraform Validate') {
       steps {
         dir('terraform') {
-          sh '''
+          bat '''
             terraform validate
           '''
         }
@@ -47,7 +52,7 @@ pipeline {
            credentialsId: 'aws-credentials']
         ]) {
           dir('terraform') {
-            sh '''
+            bat '''
               terraform plan -out=tfplan
             '''
           }
@@ -68,7 +73,7 @@ pipeline {
            credentialsId: 'aws-credentials']
         ]) {
           dir('terraform') {
-            sh '''
+            bat '''
               terraform apply -auto-approve tfplan
             '''
           }
