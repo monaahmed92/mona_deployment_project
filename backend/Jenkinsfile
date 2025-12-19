@@ -25,20 +25,18 @@ pipeline {
 
 
         stage('Push Image') {
-            steps {
+           steps {
                 withCredentials([usernamePassword(
-                    credentialsId: 'a104042b-1462-4017-b068-3ba4ddf1d695',
+                    credentialsId: 'dockerhub-creds',
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    bat '''
-                    echo %DOCKER_PASS% | docker login -u %DOCKER_USER --password-stdin
-                    docker push %IMAGE_NAME%:latest
-                    '''
+                    bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
+                    bat "docker push %IMAGE_NAME%:latest"
                 }
-            }
-        }
     }
+}
+
 
     post {
         success {
