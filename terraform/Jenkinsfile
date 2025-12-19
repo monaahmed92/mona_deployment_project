@@ -1,0 +1,88 @@
+pipeline {
+  agent any
+
+  environment {
+    AWS_DEFAULT_REGION = "us-east-1"
+    TF_IN_AUTOMATION   = "true"
+  }
+
+  stages {
+
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Terraform Init') {
+      steps {
+        withCredentials([
+          [$class: 'AmazonWebServicesCredentialsBinding',
+           credentialsId: 'aws-credentials']
+        ]) {
+          dir('terraform') {
+            sh '''
+              terraform --version
+              terraform init -upgrade
+            '''
+          }
+        }
+      }
+    }
+
+    stage('Terraform Validate') {
+      steps {
+        dir('terraform') {
+          sh '''
+            terraform validate
+          '''
+        }
+      }
+    }
+
+    stage('Terraform Plan') {
+      steps {
+        withCredentials([
+          [$class: 'AmazonWebServicesCredentialsBinding',
+           credentialsId: 'aws-credentials']
+        ]) {
+          dir('terraform') {
+            sh '''
+              terraform plan -out=tfplan
+            '''
+          }
+        }
+      }
+    }
+
+    stage('Approval') {
+      steps {
+        input message: 'Apply Terraform changes to AWS?', ok: 'Apply'
+      }
+    }
+
+    stage('Terraform Apply') {
+      steps {
+        withCredentials([
+          [$class: 'AmazonWebServicesCredentialsBinding',
+           credentialsId: 'aws-credentials']
+        ]) {
+          dir('terraform') {
+            sh '''
+              terraform apply -auto-approve tfplan
+            '''
+          }
+        }
+      }
+    }
+  }
+
+  post {
+    success {
+      echo 'Terraform infrastructure deployed successfully.'
+    }
+    failure {
+      echo 'Terraform deployment failed.'
+    }
+  }
+}
