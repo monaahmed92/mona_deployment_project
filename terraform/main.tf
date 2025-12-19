@@ -62,26 +62,12 @@ module "eks" {
   cluster_endpoint_private_access = true
 
   # FREE-TIER SAFE NODE GROUP
-  eks_managed_node_groups = {
-    default = {
-      instance_types = ["t3.micro"]
-
-      min_size     = 3
-      max_size     = 3
-      desired_size = 3
-
-      ami_type = "AL2_x86_64"
-
-      tags = {
-        Name = "mona-eks-node"
-      }
-    }
-  }
 
   tags = {
     Environment = "dev"
   }
 }
+
 # ECR Repository for Backend
 resource "aws_ecr_repository" "backend" {
   name                 = "backend"
