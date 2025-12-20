@@ -139,7 +139,7 @@ pipeline {
                 """
             }
         }
-        
+
         stage('Configure kubectl') {
             steps {
                 withCredentials([
@@ -175,18 +175,25 @@ pipeline {
                     """
                 }
             }
-}
+       }
 
         stage('Deploy to EKS') {
             steps {
-                   // Replace image tag in frontend.yaml dynamically
-            bat """
-                powershell -Command "(gc k8/frontend.yaml) -replace 'image: .*frontend:.*', 'image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}' | Out-File k8/deployment_temp.yaml -Encoding ascii"
-                kubectl apply -f k8/deployment_temp.yaml -n ${K8S_NAMESPACE}
-              """
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-credentials']
+                ]) {
+                    bat """
+                        REM Update image in manifest
+                        powershell -Command "(gc k8/frontend.yaml) -replace 'image: .*frontend:.*', 'image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}' | Out-File k8/deployment_temp.yaml -Encoding ascii"
+
+                        REM Apply to EKS
+                        kubectl apply -f k8/deployment_temp.yaml -n ${K8S_NAMESPACE}
+                    """
+                }
             }
-            
         }
+
     }
 
     post {
