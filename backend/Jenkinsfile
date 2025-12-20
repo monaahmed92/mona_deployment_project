@@ -1,156 +1,3 @@
-// pipeline {
-//   agent any
-
-//   environment {
-//     AWS_REGION     = "us-east-1"
-//     AWS_ACCOUNT_ID = "134667369554"
-//     ECR_REPO       = "backend"
-//     IMAGE_TAG      = "${GIT_COMMIT}"
-//   }
-
-//   triggers {
-//     githubPush()
-//   }
-
-//   stages {
-//     stage('Checkout') {
-//       steps {
-//         checkout scm
-//       }
-//     }
-
-//     stage('Build Image') {
-//       when {
-//         changeset "**/backend/**"
-//       }
-//       steps {
-//         dir('backend') {
-//           bat "docker build -t ${ECR_REPO}:${IMAGE_TAG} ."
-//         }
-//       }
-//     }
-
-//     stage('Login to ECR') {
-//       when {
-//         changeset "**/backend/**"
-//       }
-//       steps {
-//         withCredentials([
-//           [$class: 'AmazonWebServicesCredentialsBinding',
-//            credentialsId: 'aws-credentials']
-//         ]) {
-//           bat """
-//             aws ecr get-login-password --region ${AWS_REGION} ^
-//             | docker login --username AWS --password-stdin ^
-//               ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
-//           """
-//         }
-//       }
-//     }
-
-//     stage('Tag & Push') {
-//       when {
-//         changeset "**/backend/**"
-//       }
-//       steps {
-//         bat """
-//           docker tag ${ECR_REPO}:${IMAGE_TAG} ^
-//             ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
-
-//           docker tag ${ECR_REPO}:${IMAGE_TAG} ^
-//             ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:latest
-
-//           docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
-//           docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:latest
-//         """
-//       }
-//     }
-//   }
-
-//   post {
-//     always {
-//       bat "docker system prune -f"
-//     }
-//   }
-// }
-
-
-// pipeline {
-//   agent any
-
-//   environment {
-//     AWS_REGION     = "us-east-1"
-//     AWS_ACCOUNT_ID = "134667369554"
-//     ECR_REPO       = "frontend"
-//     IMAGE_TAG      = "${GIT_COMMIT}"
-//   }
-
-//   triggers {
-//     githubPush()
-//   }
-
-//   stages {
-//     stage('Checkout') {
-//       steps {
-//         checkout scm
-//       }
-//     }
-
-//     stage('Build Image') {
-//       when {
-//         changeset "**/frontend/**"
-//       }
-//       steps {
-//         dir('frontend') {
-//           bat "docker build -t ${ECR_REPO}:${IMAGE_TAG} ."
-//         }
-//       }
-//     }
-
-//     stage('Login to ECR') {
-//       when {
-//         changeset "**/frontend/**"
-//       }
-//       steps {
-//         withCredentials([
-//           [$class: 'AmazonWebServicesCredentialsBinding',
-//            credentialsId: 'aws-credentials']
-//         ]) {
-//           bat """
-//             aws ecr get-login-password --region ${AWS_REGION} ^
-//             | docker login --username AWS --password-stdin ^
-//               ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
-//           """
-//         }
-//       }
-//     }
-
-//     stage('Tag & Push') {
-//       when {
-//         changeset "**/frontend/**"
-//       }
-//       steps {
-//         bat """
-//           docker tag ${ECR_REPO}:${IMAGE_TAG} ^
-//             ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
-
-//           docker tag ${ECR_REPO}:${IMAGE_TAG} ^
-//             ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:latest
-
-//           docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
-//           docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:latest
-//         """
-//       }
-//     }
-//   }
-
-//   post {
-//     always {
-//       bat "docker system prune -f"
-//     }
-//   }
-// }
-
 pipeline {
     agent any
 
@@ -229,6 +76,7 @@ pipeline {
                 }
             }
         }
+
         stage('Create/Update ECR Secret in EKS') {
             steps {
                 withCredentials([
@@ -252,7 +100,7 @@ pipeline {
                     """
                 }
             }
-       }
+        }
 
         stage('Deploy to EKS') {
             steps {
@@ -270,7 +118,6 @@ pipeline {
                 }
             }
         }
-
     }
 
     post {
