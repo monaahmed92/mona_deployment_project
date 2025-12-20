@@ -1,76 +1,283 @@
+// pipeline {
+//   agent any
+
+//   environment {
+//     AWS_REGION     = "us-east-1"
+//     AWS_ACCOUNT_ID = "134667369554"
+//     ECR_REPO       = "backend"
+//     IMAGE_TAG      = "${GIT_COMMIT}"
+//   }
+
+//   triggers {
+//     githubPush()
+//   }
+
+//   stages {
+//     stage('Checkout') {
+//       steps {
+//         checkout scm
+//       }
+//     }
+
+//     stage('Build Image') {
+//       when {
+//         changeset "**/backend/**"
+//       }
+//       steps {
+//         dir('backend') {
+//           bat "docker build -t ${ECR_REPO}:${IMAGE_TAG} ."
+//         }
+//       }
+//     }
+
+//     stage('Login to ECR') {
+//       when {
+//         changeset "**/backend/**"
+//       }
+//       steps {
+//         withCredentials([
+//           [$class: 'AmazonWebServicesCredentialsBinding',
+//            credentialsId: 'aws-credentials']
+//         ]) {
+//           bat """
+//             aws ecr get-login-password --region ${AWS_REGION} ^
+//             | docker login --username AWS --password-stdin ^
+//               ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+//           """
+//         }
+//       }
+//     }
+
+//     stage('Tag & Push') {
+//       when {
+//         changeset "**/backend/**"
+//       }
+//       steps {
+//         bat """
+//           docker tag ${ECR_REPO}:${IMAGE_TAG} ^
+//             ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
+
+//           docker tag ${ECR_REPO}:${IMAGE_TAG} ^
+//             ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:latest
+
+//           docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
+//           docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:latest
+//         """
+//       }
+//     }
+//   }
+
+//   post {
+//     always {
+//       bat "docker system prune -f"
+//     }
+//   }
+// }
+
+
+// pipeline {
+//   agent any
+
+//   environment {
+//     AWS_REGION     = "us-east-1"
+//     AWS_ACCOUNT_ID = "134667369554"
+//     ECR_REPO       = "frontend"
+//     IMAGE_TAG      = "${GIT_COMMIT}"
+//   }
+
+//   triggers {
+//     githubPush()
+//   }
+
+//   stages {
+//     stage('Checkout') {
+//       steps {
+//         checkout scm
+//       }
+//     }
+
+//     stage('Build Image') {
+//       when {
+//         changeset "**/frontend/**"
+//       }
+//       steps {
+//         dir('frontend') {
+//           bat "docker build -t ${ECR_REPO}:${IMAGE_TAG} ."
+//         }
+//       }
+//     }
+
+//     stage('Login to ECR') {
+//       when {
+//         changeset "**/frontend/**"
+//       }
+//       steps {
+//         withCredentials([
+//           [$class: 'AmazonWebServicesCredentialsBinding',
+//            credentialsId: 'aws-credentials']
+//         ]) {
+//           bat """
+//             aws ecr get-login-password --region ${AWS_REGION} ^
+//             | docker login --username AWS --password-stdin ^
+//               ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+//           """
+//         }
+//       }
+//     }
+
+//     stage('Tag & Push') {
+//       when {
+//         changeset "**/frontend/**"
+//       }
+//       steps {
+//         bat """
+//           docker tag ${ECR_REPO}:${IMAGE_TAG} ^
+//             ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
+
+//           docker tag ${ECR_REPO}:${IMAGE_TAG} ^
+//             ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:latest
+
+//           docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
+//           docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:latest
+//         """
+//       }
+//     }
+//   }
+
+//   post {
+//     always {
+//       bat "docker system prune -f"
+//     }
+//   }
+// }
+
 pipeline {
-  agent any
+    agent any
 
-  environment {
-    AWS_REGION     = "us-east-1"
-    AWS_ACCOUNT_ID = "134667369554"
-    ECR_REPO       = "backend"
-    IMAGE_TAG      = "${GIT_COMMIT}"
-  }
-
-  triggers {
-    githubPush()
-  }
-
-  stages {
-    stage('Checkout') {
-      steps {
-        checkout scm
-      }
+    environment {
+        AWS_REGION     = "us-east-1"
+        AWS_ACCOUNT_ID = "134667369554"
+        ECR_REPO       = "backend"
+        IMAGE_TAG      = "${GIT_COMMIT}"   // unique per commit
+        K8S_NAMESPACE  = "default"  
+        CLUSTER_NAME   = "mona-eks-cluster-v2" 
     }
 
-    stage('Build Image') {
-      when {
-        changeset "**/backend/**"
-      }
-      steps {
-        dir('backend') {
-          bat "docker build -t ${ECR_REPO}:${IMAGE_TAG} ."
+    triggers {
+        githubPush()
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
         }
-      }
-    }
 
-    stage('Login to ECR') {
-      when {
-        changeset "**/backend/**"
-      }
-      steps {
-        withCredentials([
-          [$class: 'AmazonWebServicesCredentialsBinding',
-           credentialsId: 'aws-credentials']
-        ]) {
-          bat """
-            aws ecr get-login-password --region ${AWS_REGION} ^
-            | docker login --username AWS --password-stdin ^
-              ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
-          """
+        stage('Build Image') {
+            when {
+                changeset "**/backend/**"
+            }
+            steps {
+                dir('backend') {
+                    bat "docker build -t ${ECR_REPO}:${IMAGE_TAG} ."
+                }
+            }
         }
-      }
+
+        stage('Login to ECR') {
+            when {
+                changeset "**/backend/**"
+            }
+            steps {
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding',
+                     credentialsId: 'aws-credentials']
+                ]) {
+                    bat """
+                        aws ecr get-login-password --region ${AWS_REGION} ^
+                        | docker login --username AWS --password-stdin ^
+                        ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+                    """
+                }
+            }
+        }
+
+        stage('Tag & Push') {
+            when {
+                changeset "**/backend/**"
+            }
+            steps {
+                bat """
+                    docker tag ${ECR_REPO}:${IMAGE_TAG} ^
+                        ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
+
+                    docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
+                """
+            }
+        }
+
+        stage('Configure kubectl') {
+            steps {
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials']
+                ]) {
+                    bat """
+                        REM Configure kubectl for EKS
+                        aws eks update-kubeconfig --region ${AWS_REGION} --name ${CLUSTER_NAME}
+                    """
+                }
+            }
+        }
+        stage('Create/Update ECR Secret in EKS') {
+            steps {
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding', 
+                    credentialsId: 'aws-credentials']
+                ]) {
+                    bat """
+                        REM Get ECR password
+                        aws ecr get-login-password --region ${AWS_REGION} > temp_password.txt
+                        set /p PASSWORD=<temp_password.txt
+
+                        REM Delete old secret if exists
+                        kubectl delete secret ecr-registry --ignore-not-found -n ${K8S_NAMESPACE}
+
+                        REM Create secret
+                        kubectl create secret docker-registry ecr-registry ^
+                        --docker-server=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com ^
+                        --docker-username=AWS ^
+                        --docker-password=%PASSWORD% ^
+                        -n ${K8S_NAMESPACE}
+                    """
+                }
+            }
+       }
+
+        stage('Deploy to EKS') {
+            steps {
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-credentials']
+                ]) {
+                    bat """
+                        REM Update image in manifest
+                        powershell -Command "(gc k8/backend.yaml) -replace 'image: .*backend:.*', 'image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}' | Out-File k8/deployment_temp.yaml -Encoding ascii"
+
+                        REM Apply to EKS
+                        kubectl apply -f k8/deployment_temp.yaml -n ${K8S_NAMESPACE}
+                    """
+                }
+            }
+        }
+
     }
 
-    stage('Tag & Push') {
-      when {
-        changeset "**/backend/**"
-      }
-      steps {
-        bat """
-          docker tag ${ECR_REPO}:${IMAGE_TAG} ^
-            ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
-
-          docker tag ${ECR_REPO}:${IMAGE_TAG} ^
-            ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:latest
-
-          docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
-          docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:latest
-        """
-      }
+    post {
+        always {
+            bat "docker system prune -f"
+        }
     }
-  }
-
-  post {
-    always {
-      bat "docker system prune -f"
-    }
-  }
 }
+
 
