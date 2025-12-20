@@ -98,9 +98,9 @@ pipeline {
         }
 
         stage('Build Image') {
-            // when {
-            //     changeset "**/frontend/**"
-            // }
+            when {
+                changeset "**/frontend/**"
+            }
             steps {
                 dir('frontend') {
                     bat "docker build -t ${ECR_REPO}:${IMAGE_TAG} ."
@@ -109,9 +109,9 @@ pipeline {
         }
 
         stage('Login to ECR') {
-            // when {
-            //     changeset "**/frontend/**"
-            // }
+            when {
+                changeset "**/frontend/**"
+            }
             steps {
                 withCredentials([
                     [$class: 'AmazonWebServicesCredentialsBinding',
@@ -127,9 +127,9 @@ pipeline {
         }
 
         stage('Tag & Push') {
-            // when {
-            //     changeset "**/frontend/**"
-            // }
+            when {
+                changeset "**/frontend/**"
+            }
             steps {
                 bat """
                     docker tag ${ECR_REPO}:${IMAGE_TAG} ^
