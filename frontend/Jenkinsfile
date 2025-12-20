@@ -1,0 +1,67 @@
+pipeline {
+  agent any
+
+  environment {
+    AWS_REGION     = "us-east-1"
+    AWS_ACCOUNT_ID = "134667369554"
+    ECR_REPO       = "frontend"
+    IMAGE_TAG      = "${GIT_COMMIT}"
+  }
+
+  triggers {
+    githubPush()
+  }
+
+  stages {
+
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Build Image') {
+      steps {
+        dir('frontend') {
+          sh "docker build -t ${ECR_REPO}:${IMAGE_TAG} ."
+        }
+      }
+    }
+
+    stage('Login to ECR') {
+      steps {
+        withCredentials([
+          [$class: 'AmazonWebServicesCredentialsBinding',
+           credentialsId: 'aws-credentials']
+        ]) {
+          sh """
+            aws ecr get-login-password --region ${AWS_REGION} \
+            | docker login --username AWS --password-stdin \
+              ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+          """
+        }
+      }
+    }
+
+    stage('Tag & Push') {
+      steps {
+        sh """
+          docker tag ${ECR_REPO}:${IMAGE_TAG} \
+            ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
+
+          docker tag ${ECR_REPO}:${IMAGE_TAG} \
+            ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:latest
+
+          docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
+          docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:latest
+        """
+      }
+    }
+  }
+
+  post {
+    always {
+      sh "docker system prune -f"
+    }
+  }
+}
