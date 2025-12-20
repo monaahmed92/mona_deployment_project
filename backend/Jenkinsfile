@@ -13,7 +13,6 @@ pipeline {
   }
 
   stages {
-
     stage('Checkout') {
       steps {
         checkout scm
@@ -21,6 +20,9 @@ pipeline {
     }
 
     stage('Build Image') {
+      when {
+        changeset "**/backend/**"
+      }
       steps {
         dir('backend') {
           bat "docker build -t ${ECR_REPO}:${IMAGE_TAG} ."
@@ -29,14 +31,17 @@ pipeline {
     }
 
     stage('Login to ECR') {
+      when {
+        changeset "**/backend/**"
+      }
       steps {
         withCredentials([
           [$class: 'AmazonWebServicesCredentialsBinding',
            credentialsId: 'aws-credentials']
         ]) {
           bat """
-            aws ecr get-login-password --region ${AWS_REGION} \
-            | docker login --username AWS --password-stdin \
+            aws ecr get-login-password --region ${AWS_REGION} ^
+            | docker login --username AWS --password-stdin ^
               ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
           """
         }
@@ -44,12 +49,15 @@ pipeline {
     }
 
     stage('Tag & Push') {
+      when {
+        changeset "**/backend/**"
+      }
       steps {
         bat """
-          docker tag ${ECR_REPO}:${IMAGE_TAG} \
+          docker tag ${ECR_REPO}:${IMAGE_TAG} ^
             ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
 
-          docker tag ${ECR_REPO}:${IMAGE_TAG} \
+          docker tag ${ECR_REPO}:${IMAGE_TAG} ^
             ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:latest
 
           docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
@@ -62,7 +70,6 @@ pipeline {
   post {
     always {
       bat "docker system prune -f"
-
     }
   }
 }
