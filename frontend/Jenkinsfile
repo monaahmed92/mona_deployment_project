@@ -138,33 +138,59 @@ pipeline {
                 """
             }
         }
-
         stage('Create/Update ECR Secret in EKS') {
             steps {
                 withCredentials([
-                    [$class: 'AmazonWebServicesCredentialsBinding',
-                     credentialsId: 'aws-credentials']
+                    [$class: 'AmazonWebServicesCredentialsBinding', 
+                    credentialsId: 'aws-credentials']
                 ]) {
                     bat """
+                        REM Get ECR password
+                        aws ecr get-login-password --region ${AWS_REGION} > temp_password.txt
+                        set /p PASSWORD=<temp_password.txt
+
+                        REM Delete old secret if exists
                         kubectl delete secret ecr-registry --ignore-not-found -n ${K8S_NAMESPACE}
-                        aws ecr get-login-password --region ${AWS_REGION} ^
-                          | kubectl create secret docker-registry ecr-registry ^
-                            --docker-server=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com ^
-                            --docker-username=AWS ^
-                            --docker-password-stdin -n ${K8S_NAMESPACE}
+
+                        REM Create secret
+                        kubectl create secret docker-registry ecr-registry ^
+                        --docker-server=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com ^
+                        --docker-username=AWS ^
+                        --docker-password=%PASSWORD% ^
+                        -n ${K8S_NAMESPACE}
                     """
                 }
             }
-        }
+}
+
+
+        // stage('Create/Update ECR Secret in EKS') {
+        //     steps {
+        //         withCredentials([
+        //             [$class: 'AmazonWebServicesCredentialsBinding',
+        //              credentialsId: 'aws-credentials']
+        //         ]) {
+        //             bat """
+        //                 kubectl delete secret ecr-registry --ignore-not-found -n ${K8S_NAMESPACE}
+        //                 aws ecr get-login-password --region ${AWS_REGION} ^
+        //                   | kubectl create secret docker-registry ecr-registry ^
+        //                     --docker-server=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com ^
+        //                     --docker-username=AWS ^
+        //                     --docker-password-stdin -n ${K8S_NAMESPACE}
+        //             """
+        //         }
+        //     }
+        // }
 
         stage('Deploy to EKS') {
             steps {
-                // Replace image tag in deployment.yaml dynamically
-                bat """
-                    powershell -Command "(gc k8/deployment.yaml) -replace 'image: .*frontend:.*', 'image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}' | Out-File k8/deployment_temp.yaml -Encoding ascii"
-                    kubectl apply -f k8/deployment_temp.yaml -n ${K8S_NAMESPACE}
-                """
+                   // Replace image tag in frontend.yaml dynamically
+            bat """
+                powershell -Command "(gc k8/frontend.yaml) -replace 'image: .*frontend:.*', 'image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}' | Out-File k8/deployment_temp.yaml -Encoding ascii"
+                kubectl apply -f k8/deployment_temp.yaml -n ${K8S_NAMESPACE}
+              """
             }
+            
         }
     }
 
