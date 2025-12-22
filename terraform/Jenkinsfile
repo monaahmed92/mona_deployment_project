@@ -113,15 +113,8 @@ pipeline {
         ]) {
           dir('terraform') {
             bat '''
-              REM Clean previous Terraform state and lock
-              if exist .terraform rd /s /q .terraform
-              if exist .terraform.lock.hcl del /q .terraform.lock.hcl
-
-              REM Check Terraform version
               terraform --version
-
-              REM Initialize Terraform and upgrade modules
-              terraform init -upgrade
+              terraform init
             '''
           }
         }
@@ -131,9 +124,7 @@ pipeline {
     stage('Terraform Validate') {
       steps {
         dir('terraform') {
-          bat '''
-            terraform validate
-          '''
+          bat 'terraform validate'
         }
       }
     }
@@ -145,9 +136,7 @@ pipeline {
            credentialsId: 'aws-credentials']
         ]) {
           dir('terraform') {
-            bat '''
-              terraform plan -out=tfplan
-            '''
+            bat 'terraform plan -out=tfplan'
           }
         }
       }
@@ -166,14 +155,11 @@ pipeline {
            credentialsId: 'aws-credentials']
         ]) {
           dir('terraform') {
-            bat '''
-              terraform apply -auto-approve tfplan
-            '''
+            bat 'terraform apply tfplan'
           }
         }
       }
     }
-
   }
 
   post {
@@ -185,4 +171,3 @@ pipeline {
     }
   }
 }
-
