@@ -115,7 +115,7 @@ pipeline {
             bat '''
               del .terraform.lock.hcl
               terraform --version
-              terraform init
+              terraform init -upgrade
               terraform providers
             '''
           }
