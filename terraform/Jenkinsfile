@@ -113,8 +113,10 @@ pipeline {
         ]) {
           dir('terraform') {
             bat '''
+              del .terraform.lock.hcl
               terraform --version
               terraform init
+              terraform providers
             '''
           }
         }
