@@ -1,4 +1,28 @@
 
+resource "aws_iam_role" "nexus_ssm_role" {
+  name = "nexus-ssm-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Service = "ec2.amazonaws.com" }
+      Action    = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ssm_core" {
+  role       = aws_iam_role.nexus_ssm_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_instance_profile" "nexus_ssm_profile" {
+  name = "nexus-ssm-profile"
+  role = aws_iam_role.nexus_ssm_role.name
+}
+
+
 data "aws_ami" "amazon_linux" {
   most_recent = true
   owners      = ["amazon"]
@@ -19,12 +43,6 @@ resource "aws_security_group" "nexus_sg" {
   description = "Security group for Nexus Repository"
   vpc_id      = module.vpc.vpc_id   # use your existing VPC reference
 
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["197.38.244.181/32"]
-  }
 
   ingress {
     from_port   = 8081
@@ -50,8 +68,9 @@ resource "aws_instance" "nexus" {
   ami                    = data.aws_ami.amazon_linux.id
   instance_type          = "t3.medium"
   subnet_id              = module.vpc.public_subnets[0]
-  key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.nexus_sg.id]
+
+  iam_instance_profile = aws_iam_instance_profile.nexus_ssm_profile.name
 
   tags = {
     Name = "nexus-server"

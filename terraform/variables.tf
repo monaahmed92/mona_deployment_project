@@ -43,8 +43,3 @@ variable "instance_type" {
   default = "t3.medium"
 }
 
-variable "key_name" {
-  description = "EC2 key pair"
-  type        = string
-  default     = "my-ec2-keypair"
-}
