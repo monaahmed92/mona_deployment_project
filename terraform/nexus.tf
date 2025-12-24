@@ -7,7 +7,7 @@ resource "aws_security_group" "nexus_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["YOUR_IP/32"]
+    cidr_blocks = ["197.38.244.181/32"]
   }
 
   ingress {
