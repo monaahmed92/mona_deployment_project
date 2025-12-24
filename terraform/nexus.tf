@@ -71,7 +71,7 @@ resource "aws_instance" "nexus" {
   vpc_security_group_ids = [aws_security_group.nexus_sg.id]
 
   iam_instance_profile = aws_iam_instance_profile.nexus_ssm_profile.name
-
+  associate_public_ip_address = true  # <-- add this
   tags = {
     Name = "nexus-server"
   }
