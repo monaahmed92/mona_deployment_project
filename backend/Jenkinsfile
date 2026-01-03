@@ -1,6 +1,5 @@
 pipeline {
     agent any
-
     environment {
         AWS_REGION     = "us-east-1"
         AWS_ACCOUNT_ID = "134667369554"
@@ -9,11 +8,9 @@ pipeline {
         K8S_NAMESPACE  = "default"  
         CLUSTER_NAME   = "mona-eks-cluster-v2" 
     }
-
     triggers {
         githubPush()
     }
-
     stages {
         stage('Checkout') {
             steps {
@@ -76,6 +73,21 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy PostgreSQL') {
+    steps {
+        withCredentials([
+            [$class: 'AmazonWebServicesCredentialsBinding',
+             credentialsId: 'aws-credentials']
+        ]) {
+            bat """
+                REM Apply PostgreSQL manifests (idempotent)
+                kubectl apply -f k8/postgres.yaml -n ${K8S_NAMESPACE}
+            """
+        }
+    }
+}
+
 
         stage('Create/Update ECR Secret in EKS') {
             steps {
