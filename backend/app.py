@@ -36,7 +36,7 @@ def root():
 
 @app.get("/health")
 def health():
-    # last_test_docs = "ok"
+    # last_test_docs_docker = "ok"
     return {"status": "ok"}
 
 
