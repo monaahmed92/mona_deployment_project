@@ -97,8 +97,8 @@ pipeline {
     TF_IN_AUTOMATION   = "true"
   }
 
+  
   stages {
-
     stage('Checkout') {
       steps {
         checkout scm
@@ -162,6 +162,7 @@ pipeline {
         }
       }
     }
+
 
 //     stage('Terraform Destroy') {
 //   steps {
