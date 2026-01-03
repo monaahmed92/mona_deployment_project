@@ -29,11 +29,14 @@ Docker images :
 1) kubectl apply -f postgres.yaml
 2) kubectl apply -f backend.yaml
 3) kubectl apply -f frontend.yaml
+   
    -------------------------------------------------------
 1) get the url of the FE
-** kubectl get svc frontend -w
+ kubectl get svc frontend -w
    
 NAME       TYPE           CLUSTER-IP       EXTERNAL-IP                                                                    PORT(S)        AGE
 frontend   LoadBalancer   172.20.117.207   k8s-default-frontend-8f155aede8-f9d443aa23919101.elb.us-east-1.amazonaws.com   80:32250/TCP   34m
 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+ 
