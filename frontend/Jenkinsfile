@@ -76,7 +76,6 @@
 
 pipeline {
     agent any
-
     environment {
         AWS_REGION     = "us-east-1"
         AWS_ACCOUNT_ID = "134667369554"
@@ -85,11 +84,9 @@ pipeline {
         K8S_NAMESPACE  = "default"  
         CLUSTER_NAME   = "mona-eks-cluster-v2" 
     }
-
     triggers {
         githubPush()
     }
-
     stages {
         stage('Checkout') {
             steps {
@@ -98,20 +95,19 @@ pipeline {
         }
 
         stage('Build Image') {
-            when {
-                changeset "**/frontend/**"
-            }
+            // when {
+            //     changeset "**/frontend/**"
+            // }
             steps {
                 dir('frontend') {
                     bat "docker build -t ${ECR_REPO}:${IMAGE_TAG} ."
                 }
             }
         }
-
         stage('Login to ECR') {
-            when {
-                changeset "**/frontend/**"
-            }
+            // when {
+            //     changeset "**/frontend/**"
+            // }
             steps {
                 withCredentials([
                     [$class: 'AmazonWebServicesCredentialsBinding',
@@ -127,9 +123,9 @@ pipeline {
         }
 
         stage('Tag & Push') {
-            when {
-                changeset "**/frontend/**"
-            }
+            // when {
+            //     changeset "**/frontend/**"
+            // }
             steps {
                 bat """
                     docker tag ${ECR_REPO}:${IMAGE_TAG} ^
@@ -176,7 +172,6 @@ pipeline {
                 }
             }
        }
-
         stage('Deploy to EKS') {
             steps {
                 withCredentials([
@@ -193,9 +188,7 @@ pipeline {
                 }
             }
         }
-
     }
-
     post {
         always {
             bat "docker system prune -f"
