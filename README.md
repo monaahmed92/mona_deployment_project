@@ -29,11 +29,295 @@ Docker images :
 1) kubectl apply -f postgres.yaml
 2) kubectl apply -f backend.yaml
 3) kubectl apply -f frontend.yaml
+   
    -------------------------------------------------------
 1) get the url of the FE
-** kubectl get svc frontend -w
+ kubectl get svc frontend -w
    
 NAME       TYPE           CLUSTER-IP       EXTERNAL-IP                                                                    PORT(S)        AGE
 frontend   LoadBalancer   172.20.117.207   k8s-default-frontend-8f155aede8-f9d443aa23919101.elb.us-east-1.amazonaws.com   80:32250/TCP   34m
 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+
+
+
+
+
+ 
+
+Project Structure: 
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+Test using docker_compose: 
+
+
+ 
+
+ 
+
+Terraform: 
+
+ 
+
+Configuring: VPC ,Subnets , ECR private repositories(Frontend& Backend), EKS cluster  
+
+ 
+
+Providers: 
+
+
+
+ 
+
+ 
+
+Variables: 
+
+
+ 
+
+1) VPC: 
+
+
+ 
+
+2)ECR Private Repos(FE& BE): 
+
+
+ 
+
+ 
+
+3)EKS: 
+
+ 
+
+
+ 
+
+ 
+
+Terraform commands: 
+
+terraform init 
+
+terraform validate 
+
+terraform apply 
+
+ 
+
+--------------------------------------------------Jenkin Pipeline------------------------------------------- 
+
+ 
+
+1. Install Jenkins Plugins 
+
+Pipeline 
+
+Credentials Binding 
+
+AWS Credentials 
+
+2- Add AWS credentials(Access key & Secret key) 
+
+ 
+
+
+ 
+
+3-Add  "Jenkinsfile" in terraform directory  
+
+ 
+
+
+ 
+
+ 
+
+4- Set Up GitHub Webhook 
+
+
+ 
+
+ 
+
+5- Add Jenkins Pipeline: 
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+ 
+
+ 
+
+AWS Infra : 
+
+------------ 
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+Question: should I add the approval stage in Jenkins file or not? 
+
+ 
+
+ 
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+----------------------------------K8 deployment files------------------------------ 
+
+
+ 
+
+ 
+
+Backend manifest file: 
+
+
+
+ 
+
+Frontend manifest file: 
+
+ 
+
+ 
+
+
+ 
+
+
+ 
+
+Postgres manifest file: 
+
+ 
+
+
+ 
+
+
+ 
+
+ 
+
+ 
+
+Jenkins: 
+
+ 
+
+ 
+
+-------------------------Jenkins Pipelines (Terraform & FE & BE) --------------- 
+
+ 
+
+
+ 
+
+BE Pipeline: 
+
+ 
+
+
+ 
+
+
+ 
+
+ 
+
+
+ 
+
+Jenkin file: 
+
+ 
+
+
+ 
+
+ 
+
+ 
+
+FE Pipeline: 
+
+
+ 
+
+Jenkin file: 
+
+ 
+
+
+ 
